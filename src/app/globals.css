@@ -385,15 +385,36 @@
   * {
     @apply border-border outline-ring/50;
     transition: var(--theme-transition);
-  }
-
-  body {
-    @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
     @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    min-width: 320px;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  button, a {
+    touch-action: manipulation;
+  }
+}
+
+/* Custom scrollbar styling for category chips and mobile touch containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .spiritual-background {

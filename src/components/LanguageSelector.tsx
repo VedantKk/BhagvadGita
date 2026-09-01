@@ -9,12 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { buttonVariants } from "@/components/ui/button"
-import { Globe } from "lucide-react"
+import { Globe, Check } from "lucide-react"
 import { useTranslation } from "@/lib/i18n"
 
-const languages: { code: AppLanguage; name: string }[] = [
-  { code: "en", name: "English" },
-  { code: "hi", name: "हिंदी" },
+const languages: { code: AppLanguage; name: string; short: string }[] = [
+  { code: "en", name: "English", short: "EN" },
+  { code: "hi", name: "हिंदी", short: "हि" },
 ]
 
 export function LanguageSelector() {
@@ -29,9 +29,9 @@ export function LanguageSelector() {
 
   if (!mounted) {
     return (
-      <div className={buttonVariants({ variant: "ghost", size: "sm", className: "w-[100px] justify-start opacity-50" })}>
-        <Globe className="mr-2 h-4 w-4" />
-        <span className="truncate">Language</span>
+      <div className={buttonVariants({ variant: "ghost", size: "sm", className: "h-9 px-2 sm:px-3 justify-center sm:justify-start opacity-50" })}>
+        <Globe className="h-4 w-4 text-primary" />
+        <span className="hidden sm:inline ml-1.5 text-xs font-medium">Language</span>
       </div>
     )
   }
@@ -40,22 +40,32 @@ export function LanguageSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={buttonVariants({ variant: "ghost", size: "sm", className: "w-[120px] justify-start" })}>
-        <Globe className="mr-2 h-4 w-4 text-primary" />
-        <span className="truncate font-medium">{currentLang?.name}</span>
+      <DropdownMenuTrigger
+        className={buttonVariants({
+          variant: "ghost",
+          size: "sm",
+          className: "h-9 px-2.5 sm:px-3 flex items-center justify-center sm:justify-start gap-1.5 focus-visible:ring-1 focus-visible:ring-primary/40",
+        })}
+        aria-label="Select Language"
+      >
+        <Globe className="h-4 w-4 text-primary shrink-0" />
+        <span className="hidden sm:inline text-xs font-medium truncate">{currentLang?.name}</span>
+        <span className="sm:hidden text-xs font-semibold uppercase">{currentLang?.short}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[150px]">
-        <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+      <DropdownMenuContent align="end" className="w-[140px] z-50">
+        <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t.language}
         </div>
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={`cursor-pointer ${language === lang.code ? "bg-primary/10 text-primary font-medium" : ""
-              }`}
+            className={`cursor-pointer flex items-center justify-between py-2 text-sm ${
+              language === lang.code ? "bg-primary/10 text-primary font-semibold" : ""
+            }`}
           >
-            {lang.name}
+            <span>{lang.name}</span>
+            {language === lang.code && <Check className="h-3.5 w-3.5" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

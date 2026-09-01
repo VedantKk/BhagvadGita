@@ -22,7 +22,7 @@ export default async function VersePage({ params }: { params: Promise<{ chapterI
   if (!verse) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
-        <h1 className="text-3xl font-bold mb-4">Verse not found</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4">Verse not found</h1>
         <Link href={`/chapters/${chapterId}`} className={buttonVariants({ variant: "default" })}>
           Back to Chapter
         </Link>
@@ -30,35 +30,55 @@ export default async function VersePage({ params }: { params: Promise<{ chapterI
     )
   }
 
-  // Basic next/prev verse navigation (assuming next verse is simply +1, but actual implementation might need max verses check per chapter)
   const prevVerse = verse.verse_number > 1 ? verse.verse_number - 1 : null
-  const nextVerse = verse.verse_number + 1 // For real implementation, we should check max verses in the chapter
+  const nextVerse = verse.verse_number + 1
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-16 max-w-4xl">
-      <div className="mb-12 border-b border-border/30 pb-4">
-        <Link href={`/chapters/${verse.chapter_number}`} className={buttonVariants({ variant: "ghost", className: "mb-4 -ml-4 text-muted-foreground hover:text-primary transition-colors" })}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+    <div className="container mx-auto px-3 sm:px-6 py-8 sm:py-16 max-w-4xl">
+      <div className="mb-8 border-b border-border/30 pb-4">
+        <Link 
+          href={`/chapters/${verse.chapter_number}`} 
+          className={buttonVariants({ 
+            variant: "ghost", 
+            className: "mb-2 -ml-2 sm:-ml-4 text-muted-foreground hover:text-primary transition-colors text-xs sm:text-sm h-9 px-3" 
+          })}
+        >
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
           Chapter {verse.chapter_number}
         </Link>
       </div>
 
-      <VerseCard verse={verse} hideReadMore={true} />
+      <div className="bg-card/20 rounded-2xl sm:rounded-3xl p-3 sm:p-6 md:p-8 border border-border/20 backdrop-blur-sm">
+        <VerseCard verse={verse} hideReadMore={true} />
+      </div>
       
       <SpiritualReflection verseId={verse.slug} />
 
-      <div className="mt-16 flex justify-between items-center pt-10 border-t border-border/30">
+      {/* Navigation Between Verses */}
+      <div className="mt-12 sm:mt-16 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 pt-8 border-t border-border/30">
         {prevVerse ? (
-          <Link href={`/verse/${verse.chapter_number}/${prevVerse}`} className={buttonVariants({ variant: "outline", className: "border-primary/20 hover:bg-primary/5" })}>
+          <Link 
+            href={`/verse/${verse.chapter_number}/${prevVerse}`} 
+            className={buttonVariants({ 
+              variant: "outline", 
+              className: "border-primary/20 hover:bg-primary/5 h-11 px-5 justify-center text-sm" 
+            })}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Verse {prevVerse}
+            Previous Verse ({prevVerse})
           </Link>
         ) : (
-          <div></div>
+          <div className="hidden sm:block"></div>
         )}
         
-        <Link href={`/verse/${verse.chapter_number}/${nextVerse}`} className={buttonVariants({ variant: "outline", className: "border-primary/20 hover:bg-primary/5" })}>
-          Verse {nextVerse}
+        <Link 
+          href={`/verse/${verse.chapter_number}/${nextVerse}`} 
+          className={buttonVariants({ 
+            variant: "outline", 
+            className: "border-primary/20 hover:bg-primary/5 h-11 px-5 justify-center text-sm" 
+          })}
+        >
+          <span>Next Verse ({nextVerse})</span>
           <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
       </div>
