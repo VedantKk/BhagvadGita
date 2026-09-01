@@ -1,14 +1,19 @@
 import Link from "next/link"
 import { getVerse } from "@/lib/api/client"
+import { getDailyVerse } from "@/lib/data/daily"
 import { VerseCard } from "@/components/VerseCard"
 import { QuoteCard } from "@/components/QuoteCard"
+import { DailyVerseAutoRefresh } from "@/components/DailyVerseAutoRefresh"
 import { buttonVariants } from "@/components/ui/button"
 import { BookOpen } from "lucide-react"
 import { quotesList } from "@/lib/data/quotes"
 import { Verse } from "@/lib/api/types"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 60
+
 export default async function Home() {
-  const todaysVerse = await getVerse(2, 47)
+  const todaysVerse = await getDailyVerse()
   
   const featuredQuotesData = quotesList.filter((q) => q.isFeatured).slice(0, 3)
   const featuredVersesPromises = featuredQuotesData.map((q) => getVerse(q.chapterId, q.verseId))
@@ -16,6 +21,8 @@ export default async function Home() {
 
   return (
     <div className="relative flex flex-col items-center min-h-[calc(100vh-4rem)] overflow-hidden">
+      <DailyVerseAutoRefresh />
+
       {/* Ambient Spiritual Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '8s' }}></div>
