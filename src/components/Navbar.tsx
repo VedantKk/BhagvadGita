@@ -38,7 +38,7 @@ export function Navbar() {
       <div className="container mx-auto flex h-16 items-center px-4 md:px-8">
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary font-tiro leading-none mb-1">||ॐ||</span>
+            <span className="text-2xl font-bold text-primary font-tiro leading-none mb-1">Shree</span>
             <span className="font-semibold text-lg tracking-tight">Bhagavad Gita</span>
           </Link>
         </div>
