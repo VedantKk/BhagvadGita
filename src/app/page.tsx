@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { getVerse } from "@/lib/api/client"
 import { getDailyVerse } from "@/lib/data/daily"
@@ -11,6 +12,19 @@ import { Verse } from "@/lib/api/types"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: "Bhagavad Gita – Read Bhagavad Gita Online | Sanskrit, Hindi & English Translation",
+  description: "Read the Bhagavad Gita online with original Sanskrit shlokas, English and Hindi translations, verse meanings, chapter summaries, and timeless teachings of Lord Krishna.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Bhagavad Gita – Read Bhagavad Gita Online | Sanskrit, Hindi & English",
+    description: "Read the Bhagavad Gita online with original Sanskrit shlokas, English and Hindi translations, verse meanings, and chapter summaries.",
+    url: "/",
+  },
+}
 
 export default async function Home() {
   const todaysVerse = await getDailyVerse()

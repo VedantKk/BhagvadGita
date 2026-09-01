@@ -1,16 +1,55 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { getChapter, getChapterVerses } from "@/lib/api/client"
 import { VerseCard } from "@/components/VerseCard"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
+import { getBreadcrumbJsonLd, getChapterJsonLd, SITE_URL } from "@/lib/seo"
 
-export async function generateMetadata({ params }: { params: Promise<{ chapterId: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ chapterId: string }> }): Promise<Metadata> {
   const { chapterId } = await params;
   const chapter = await getChapter(chapterId)
   if (!chapter) return { title: "Chapter Not Found | Bhagavad Gita" }
+
+  const title = `Bhagavad Gita Chapter ${chapter.chapter_number} – ${chapter.name_translation || chapter.name} | Shlokas, Meaning & Translation`
+  const description = `${chapter.chapter_summary.slice(0, 150)}... Read all ${chapter.verses_count} verses with Sanskrit shlokas, English and Hindi translations.`
+
   return {
-    title: `Chapter ${chapter.chapter_number}: ${chapter.name} | Bhagavad Gita`,
-    description: chapter.chapter_summary,
+    title,
+    description,
+    keywords: [
+      `Bhagavad Gita Chapter ${chapter.chapter_number}`,
+      `Gita Chapter ${chapter.chapter_number}`,
+      chapter.name,
+      chapter.name_translation,
+      chapter.name_meaning,
+      `Bhagavad Gita Chapter ${chapter.chapter_number} summary`,
+      `Bhagavad Gita Chapter ${chapter.chapter_number} shlokas`,
+      `Chapter ${chapter.chapter_number} Hindi translation`,
+      `Chapter ${chapter.chapter_number} English translation`,
+    ],
+    alternates: {
+      canonical: `/chapters/${chapter.chapter_number}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/chapters/${chapter.chapter_number}`,
+      type: "article",
+      images: [
+        {
+          url: "/bg-krishna-arjuna.png",
+          width: 1200,
+          height: 630,
+          alt: `Bhagavad Gita Chapter ${chapter.chapter_number} - ${chapter.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   }
 }
 
@@ -33,8 +72,41 @@ export default async function ChapterReaderPage({ params }: { params: Promise<{ 
   const prevChapter = chapter.chapter_number > 1 ? chapter.chapter_number - 1 : null
   const nextChapter = chapter.chapter_number < 18 ? chapter.chapter_number + 1 : null
 
+  const breadcrumbs = getBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Chapters", url: "/chapters" },
+    { name: `Chapter ${chapter.chapter_number}`, url: `/chapters/${chapter.chapter_number}` },
+  ])
+
+  const chapterSchema = getChapterJsonLd(chapter)
+
+  const versesItemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    numberOfItems: verses.length,
+    itemListElement: verses.map((verse, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: `Bhagavad Gita ${verse.chapter_number}.${verse.verse_number}`,
+      url: `${SITE_URL}/verse/${verse.chapter_number}/${verse.verse_number}`,
+    })),
+  }
+
   return (
     <div className="container mx-auto px-3 sm:px-6 py-8 sm:py-16 max-w-4xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(chapterSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(versesItemList) }}
+      />
+
       <div className="mb-8 sm:mb-12">
         <Link href="/chapters" className={buttonVariants({ variant: "ghost", className: "mb-4 -ml-2 sm:-ml-4 text-muted-foreground hover:text-foreground text-xs sm:text-sm h-9 px-3" })}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />

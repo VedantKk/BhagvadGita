@@ -1,18 +1,66 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { getChapters } from "@/lib/api/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Sparkles } from "lucide-react"
+import { getBreadcrumbJsonLd, SITE_URL } from "@/lib/seo"
 
-export const metadata = {
-  title: "Chapters | Bhagavad Gita",
-  description: "Explore all 18 chapters of the Bhagavad Gita.",
+export const metadata: Metadata = {
+  title: "All 18 Chapters of Bhagavad Gita | Summary, Meaning & Sanskrit Shlokas",
+  description: "Explore all 18 chapters of the Bhagavad Gita from Arjuna Vishada Yoga to Moksha Sanyasa Yoga. Read Sanskrit verses, Hindi & English translations, and chapter summaries.",
+  keywords: [
+    "Bhagavad Gita Chapters",
+    "All 18 Chapters of Gita",
+    "Bhagavad Gita summary",
+    "Gita chapters in English",
+    "Gita chapters in Hindi",
+    "Sankhya Yoga",
+    "Karma Yoga",
+    "Bhakti Yoga",
+    "Jnana Yoga",
+    "Moksha Sanyasa Yoga",
+  ],
+  alternates: {
+    canonical: "/chapters",
+  },
+  openGraph: {
+    title: "All 18 Chapters of Bhagavad Gita | Shlokas & Meanings",
+    description: "Explore all 18 chapters of the Bhagavad Gita with summaries, shloka counts, and word meanings.",
+    url: "/chapters",
+  },
 }
 
 export default async function ChaptersPage() {
   const chapters = await getChapters()
 
+  const breadcrumbs = getBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Chapters", url: "/chapters" },
+  ])
+
+  const chaptersItemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: chapters.map((chapter, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: `Chapter ${chapter.chapter_number}: ${chapter.name_translation || chapter.name}`,
+      description: chapter.chapter_summary,
+      url: `${SITE_URL}/chapters/${chapter.chapter_number}`,
+    })),
+  }
+
   return (
     <div className="container mx-auto px-3 sm:px-6 py-10 sm:py-16 max-w-5xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(chaptersItemList) }}
+      />
+
       <div className="space-y-3 sm:space-y-4 mb-8 sm:mb-12 text-center md:text-left">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium uppercase tracking-widest">
           <Sparkles className="w-3.5 h-3.5" />

@@ -1,17 +1,65 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { getVerse } from "@/lib/api/client"
 import { VerseCard } from "@/components/VerseCard"
 import { buttonVariants } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { SpiritualReflection } from "@/components/SpiritualReflection"
+import { getBreadcrumbJsonLd, getVerseJsonLd, FAMOUS_VERSE_PHRASES } from "@/lib/seo"
 
-export async function generateMetadata({ params }: { params: Promise<{ chapterId: string, verseId: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ chapterId: string, verseId: string }> }): Promise<Metadata> {
   const { chapterId, verseId } = await params;
   const verse = await getVerse(chapterId, verseId)
   if (!verse) return { title: "Verse Not Found | Bhagavad Gita" }
+
+  const verseKey = `${verse.chapter_number}.${verse.verse_number}`
+  const famousPhrase = FAMOUS_VERSE_PHRASES[verseKey]
+
+  const title = famousPhrase
+    ? `Bhagavad Gita ${verseKey} – ${famousPhrase} | Shloka & Meaning`
+    : `Bhagavad Gita Chapter ${verse.chapter_number} Verse ${verse.verse_number} | Shloka, Meaning & Translation`
+
+  const englishTranslation = verse.translations.find((t) => t.language.toLowerCase() === "english")?.description || verse.translations[0]?.description || ""
+  const description = `Read Bhagavad Gita Chapter ${verse.chapter_number}, Verse ${verse.verse_number}: "${englishTranslation.slice(0, 140)}...". Includes original Sanskrit text, transliteration, English & Hindi translation.`
+
   return {
-    title: `Chapter ${verse.chapter_number} Verse ${verse.verse_number} | Bhagavad Gita`,
-    description: verse.translations[0]?.description || "Read and understand the Bhagavad Gita.",
+    title,
+    description,
+    keywords: [
+      `Bhagavad Gita ${verseKey}`,
+      `Bhagavad Gita Chapter ${verse.chapter_number} Verse ${verse.verse_number}`,
+      `Gita ${verseKey}`,
+      `Gita shloka ${verseKey}`,
+      `Bhagavad Gita ${verse.slug}`,
+      "Sanskrit Shloka",
+      "Gita verse meaning",
+      "Lord Krishna teachings",
+      "Karma Yoga",
+      "Bhakti Yoga",
+      "Sanatana Dharma",
+    ],
+    alternates: {
+      canonical: `/verse/${verse.chapter_number}/${verse.verse_number}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/verse/${verse.chapter_number}/${verse.verse_number}`,
+      type: "article",
+      images: [
+        {
+          url: "/bg-krishna-arjuna.png",
+          width: 1200,
+          height: 630,
+          alt: `Bhagavad Gita ${verseKey} Sanskrit Shloka`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   }
 }
 
@@ -33,8 +81,26 @@ export default async function VersePage({ params }: { params: Promise<{ chapterI
   const prevVerse = verse.verse_number > 1 ? verse.verse_number - 1 : null
   const nextVerse = verse.verse_number + 1
 
+  const breadcrumbs = getBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Chapters", url: "/chapters" },
+    { name: `Chapter ${verse.chapter_number}`, url: `/chapters/${verse.chapter_number}` },
+    { name: `Verse ${verse.chapter_number}.${verse.verse_number}`, url: `/verse/${verse.chapter_number}/${verse.verse_number}` },
+  ])
+
+  const verseSchema = getVerseJsonLd(verse)
+
   return (
     <div className="container mx-auto px-3 sm:px-6 py-8 sm:py-16 max-w-4xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(verseSchema) }}
+      />
+
       <div className="mb-8 border-b border-border/30 pb-4">
         <Link 
           href={`/chapters/${verse.chapter_number}`} 

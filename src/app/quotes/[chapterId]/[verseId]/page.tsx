@@ -1,17 +1,60 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { getVerse } from "@/lib/api/client"
 import { VerseCard } from "@/components/VerseCard"
 import { buttonVariants } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { SpiritualReflection } from "@/components/SpiritualReflection"
+import { getBreadcrumbJsonLd, getQuoteJsonLd, FAMOUS_VERSE_PHRASES } from "@/lib/seo"
 
-export async function generateMetadata({ params }: { params: Promise<{ chapterId: string, verseId: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ chapterId: string, verseId: string }> }): Promise<Metadata> {
   const { chapterId, verseId } = await params;
   const verse = await getVerse(chapterId, verseId)
   if (!verse) return { title: "Quote Not Found | Bhagavad Gita" }
+
+  const verseKey = `${verse.chapter_number}.${verse.verse_number}`
+  const famousPhrase = FAMOUS_VERSE_PHRASES[verseKey]
+
+  const title = famousPhrase
+    ? `Lord Krishna's Wisdom: Gita ${verseKey} – ${famousPhrase} | Quote & Reflection`
+    : `Lord Krishna's Wisdom: Bhagavad Gita Chapter ${verse.chapter_number}, Verse ${verse.verse_number} | Quote & Life Lessons`
+
+  const englishTranslation = verse.translations.find((t) => t.language.toLowerCase() === "english")?.description || verse.translations[0]?.description || ""
+  const description = `Read Lord Krishna's teaching from Bhagavad Gita ${verseKey}: "${englishTranslation.slice(0, 140)}...". Spiritual reflection on life, duty, and peace.`
+
   return {
-    title: `Krishna's Wisdom: Chapter ${verse.chapter_number}, Verse ${verse.verse_number}`,
-    description: verse.translations[0]?.description || "Read and understand the Bhagavad Gita.",
+    title,
+    description,
+    keywords: [
+      `Krishna Quote Gita ${verseKey}`,
+      `Bhagavad Gita ${verseKey} quote`,
+      `Bhagavad Gita Chapter ${verse.chapter_number} Verse ${verse.verse_number} teaching`,
+      "Lord Krishna wisdom",
+      "Bhagavad Gita life lessons",
+      "Krishna teachings on karma and peace",
+    ],
+    alternates: {
+      canonical: `/quotes/${verse.chapter_number}/${verse.verse_number}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/quotes/${verse.chapter_number}/${verse.verse_number}`,
+      type: "article",
+      images: [
+        {
+          url: "/bg-krishna-arjuna.png",
+          width: 1200,
+          height: 630,
+          alt: `Lord Krishna's Wisdom from Bhagavad Gita ${verseKey}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   }
 }
 
@@ -30,8 +73,25 @@ export default async function QuoteVersePage({ params }: { params: Promise<{ cha
     )
   }
 
+  const breadcrumbs = getBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Quotes", url: "/quotes" },
+    { name: `Quote ${verse.chapter_number}.${verse.verse_number}`, url: `/quotes/${verse.chapter_number}/${verse.verse_number}` },
+  ])
+
+  const quoteSchema = getQuoteJsonLd(verse, `/quotes/${verse.chapter_number}/${verse.verse_number}`)
+
   return (
     <div className="container mx-auto px-3 sm:px-6 py-8 sm:py-16 max-w-4xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(quoteSchema) }}
+      />
+
       <div className="mb-8 sm:mb-12 border-b border-border/30 pb-4">
         <Link 
           href={`/quotes`} 

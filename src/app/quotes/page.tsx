@@ -3,14 +3,39 @@ import { QuotesClient } from "./QuotesClient"
 import { getVerse } from "@/lib/api/client"
 import { quotesList } from "@/lib/data/quotes"
 import { Verse } from "@/lib/api/types"
+import { getBreadcrumbJsonLd, SITE_URL } from "@/lib/seo"
 
 export const metadata: Metadata = {
-  title: "Bhagavad Gita Quotes by Lord Krishna | Timeless Wisdom",
-  description: "100+ timeless teachings from the Bhagavad Gita on life, karma, dharma, peace, wisdom and spiritual liberation.",
+  title: "Bhagavad Gita Quotes by Lord Krishna | 100+ Timeless Teachings on Karma, Dharma & Life",
+  description: "100+ authentic teachings from the Bhagavad Gita by Lord Krishna on life, karma, duty, peace, mind control, courage, success, and spiritual liberation.",
+  keywords: [
+    "Bhagavad Gita Quotes",
+    "Lord Krishna Quotes",
+    "Bhagavad Gita teachings",
+    "Krishna wisdom",
+    "Bhagavad Gita on karma",
+    "Bhagavad Gita on peace",
+    "Bhagavad Gita on mind",
+    "Bhagavad Gita life lessons",
+    "Bhagavad Gita on fear",
+    "Bhagavad Gita on success and failure",
+  ],
+  alternates: {
+    canonical: "/quotes",
+  },
   openGraph: {
-    title: "Bhagavad Gita Quotes by Lord Krishna",
-    description: "Explore timeless teachings from the Bhagavad Gita.",
-  }
+    title: "Bhagavad Gita Quotes by Lord Krishna | Timeless Wisdom",
+    description: "Explore 100+ timeless teachings from the Bhagavad Gita on life, duty, peace, and spiritual realization.",
+    url: "/quotes",
+    images: [
+      {
+        url: "/bg-krishna-arjuna.png",
+        width: 1200,
+        height: 630,
+        alt: "Bhagavad Gita Quotes by Lord Krishna",
+      },
+    ],
+  },
 }
 
 export default async function QuotesPage() {
@@ -25,8 +50,34 @@ export default async function QuotesPage() {
     }
   })
 
+  const breadcrumbs = getBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: "Quotes", url: "/quotes" },
+  ])
+
+  const quotesItemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    numberOfItems: quotesData.length,
+    itemListElement: quotesData.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: `Krishna Wisdom: Gita ${item.verse.chapter_number}.${item.verse.verse_number}`,
+      url: `${SITE_URL}/quotes/${item.verse.chapter_number}/${item.verse.verse_number}`,
+    })),
+  }
+
   return (
     <div className="min-h-screen pb-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(quotesItemList) }}
+      />
+
       {/* Header */}
       <section className="relative w-full py-20 px-4 flex flex-col items-center text-center bg-primary/5">
         <div className="max-w-3xl space-y-6">
