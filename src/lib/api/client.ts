@@ -1,5 +1,4 @@
 import { Chapter, Verse } from "./types";
-import { mockChapters, mockVerses } from "./mockData";
 
 const API_HOST = "bhagavad-gita3.p.rapidapi.com";
 const BASE_URL = `https://${API_HOST}`;
@@ -27,26 +26,44 @@ async function fetchFromApi(endpoint: string) {
   return res.json();
 }
 
+// Lazy-load mock data only when needed (avoids parsing 2.5 MB on every request)
+async function getMockData() {
+  const { mockChapters, mockVerses } = await import("./mockData");
+  return { mockChapters, mockVerses };
+}
+
 export async function getChapters(): Promise<Chapter[]> {
   const data = await fetchFromApi("/v2/chapters/");
-  if (!data) return mockChapters;
+  if (!data) {
+    const { mockChapters } = await getMockData();
+    return mockChapters;
+  }
   return data as Chapter[];
 }
 
 export async function getChapter(chapterId: string | number): Promise<Chapter | null> {
   const data = await fetchFromApi(`/v2/chapters/${chapterId}/`);
-  if (!data) return mockChapters.find((c) => c.chapter_number.toString() === chapterId.toString()) || null;
+  if (!data) {
+    const { mockChapters } = await getMockData();
+    return mockChapters.find((c) => c.chapter_number.toString() === chapterId.toString()) || null;
+  }
   return data as Chapter;
 }
 
 export async function getChapterVerses(chapterId: string | number): Promise<Verse[]> {
   const data = await fetchFromApi(`/v2/chapters/${chapterId}/verses/`);
-  if (!data) return mockVerses.filter((v) => v.chapter_number.toString() === chapterId.toString());
+  if (!data) {
+    const { mockVerses } = await getMockData();
+    return mockVerses.filter((v) => v.chapter_number.toString() === chapterId.toString());
+  }
   return data as Verse[];
 }
 
 export async function getVerse(chapterId: string | number, verseId: string | number): Promise<Verse | null> {
   const data = await fetchFromApi(`/v2/chapters/${chapterId}/verses/${verseId}/`);
-  if (!data) return mockVerses.find((v) => v.chapter_number.toString() === chapterId.toString() && v.verse_number.toString() === verseId.toString()) || null;
+  if (!data) {
+    const { mockVerses } = await getMockData();
+    return mockVerses.find((v) => v.chapter_number.toString() === chapterId.toString() && v.verse_number.toString() === verseId.toString()) || null;
+  }
   return data as Verse;
 }

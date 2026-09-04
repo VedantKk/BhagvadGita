@@ -6,6 +6,13 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { getBreadcrumbJsonLd, getChapterJsonLd, SITE_URL } from "@/lib/seo"
 
+// Pre-render all 18 chapter pages at build time for instant navigation
+export async function generateStaticParams() {
+  return Array.from({ length: 18 }, (_, i) => ({
+    chapterId: String(i + 1),
+  }))
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ chapterId: string }> }): Promise<Metadata> {
   const { chapterId } = await params;
   const chapter = await getChapter(chapterId)
@@ -55,8 +62,10 @@ export async function generateMetadata({ params }: { params: Promise<{ chapterId
 
 export default async function ChapterReaderPage({ params }: { params: Promise<{ chapterId: string }> }) {
   const { chapterId } = await params;
-  const chapter = await getChapter(chapterId)
-  const verses = await getChapterVerses(chapterId)
+  const [chapter, verses] = await Promise.all([
+    getChapter(chapterId),
+    getChapterVerses(chapterId),
+  ])
 
   if (!chapter) {
     return (
